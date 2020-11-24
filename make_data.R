@@ -168,4 +168,4 @@ t2 + geom_point(data = data, aes(x = lon, y = lat, colour = factor(depth.x)), sh
 t2 + geom_point(data = data %>% na.omit(), aes(x = lon, y = lat, colour = mean_dens), shape = 16, size = 1)+facet_wrap(~year, ncol = 12) + scale_colour_gradientn(colours = c("black", "blue", "cyan", "green", "yellow", "orange", "red", "darkred"))+ theme_bw()
 
 # catch only
-t2 + geom_point(data = dens3 %>% filter(mean_dens > 0), aes(x = lon, y = lat, colour = mean_dens), shape = 16, size = 1)+facet_wrap(~year, ncol = 12) + scale_colour_gradientn(colours = c("black", "blue", "cyan", "green", "yellow", "orange", "red", "darkred"))+ theme_bw()
+t2 + geom_point(data = dens3 %>% filter(mean_dens > 0) %>% na.omit(), aes(x = lon, y = lat, colour = mean_dens), shape = 16, size = 1)+facet_wrap(~year, ncol = 12) + scale_colour_gradientn(colours = c("black", "blue", "cyan", "green", "yellow", "orange", "red", "darkred"))+ theme_bw()
