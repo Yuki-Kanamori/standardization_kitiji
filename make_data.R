@@ -148,6 +148,8 @@ unique(data$station.x)
 unique(data$depth.x)
 summary(data)
 
+setwd(dir1)
+write.csv(data, "data_vast.csv", fileEncoding = "CP932")
 
 # map -----------------------------------------------------------
 # 調査を行なった場所
