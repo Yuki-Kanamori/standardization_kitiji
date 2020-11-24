@@ -17,7 +17,7 @@ summary(catch) #NA無し
 catch = catch[, c(-1, -6)]
 colnames(catch)
 colnames(catch) = c("station", "depth", "ami", "in_out", "species", "raw_catch_kg", "raw_N", "file", "year")
-# write.csv(catch, "raw_catch.csv", fileEncoding = "CP932")
+write.csv(catch, "raw_catch.csv", fileEncoding = "CP932")
 
 
 # area ----------------------------------------------------------
@@ -43,6 +43,11 @@ write.csv(area, "area.csv", fileEncoding = "CP932")
 # bind ----------------------------------------------------------
 catch2 = catch %>% select(-file) %>% mutate(tag = paste(year, station, depth, ami, sep = "_"))
 area2 = area %>% select(-file) %>% mutate(tag = paste(year, station, depth, ami, sep = "_")) %>% select(-year, -station, -depth, -ami)
+
+length(unique(catch2$tag))
+length(unique(area2$tag))
+
+tag = merge
 
 catch2 = merge(catch2, area2, by = "tag", all = T)
 summary(catch2)
