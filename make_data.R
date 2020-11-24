@@ -103,9 +103,14 @@ summary(dens)
 dens2 = dens %>% group_by(year, station, depth) %>% summarise(mean_dens = mean(dens)) %>% mutate(tag = paste(year, station, depth, sep = "_")) 
 dens2$year = NULL
 dens2$station = NULL
-dens2 = merge(dens2, rec2, by = "tag", all = T)
+
+# 網次の分だけ緯度経度がダブっているので，平均をとる
+rec3 = rec2 %>% group_by(tag) %>% summarize(lon = mean(lon), lat = mean(lat)) %>% mutate(year = as.numeric(str_sub(tag, 1, 4)), station = str_sub(tag, 6, 6), depth = as.numeric(str_sub(tag, 8, 10))) 
+
+dens2 = merge(dens2, rec3 %>% select(-depth), by = "tag", all = T)
 summary(dens2)
 
+setwd(dir1)
 write.csv(dens2, "dens_lonlat.csv", fileEncoding = "CP932")
 
 
@@ -143,7 +148,6 @@ unique(data$station.x)
 unique(data$depth.x)
 summary(data)
 
-max = data[, data$mean_dens == 3284.968]
 
 # map -----------------------------------------------------------
 # 調査を行なった場所
@@ -154,8 +158,8 @@ jap <- subset(world_map, world_map$region == "Japan")
 jap_cog <- jap[jap$lat > 36 & jap$lat < 41.5 & jap$long > 140.6 & jap$long < 143, ]
 t2 <- p + geom_polygon(data = jap_cog, aes(x=long, y=lat, group=group), colour="gray 50", fill="gray 50")
 # + coord_map(xlim = c(139.5, 140.3), ylim = c(35, 35.75))
-t2 + geom_point(data = rec2, aes(x = lon, y = lat), shape = 16, size = 1)+facet_wrap(~year, ncol = 12) + theme_bw()
-t2 + geom_point(data = data, aes(x = lon, y = lat), shape = 16, size = 1)+facet_wrap(~year, ncol = 12) + theme_bw()
+t2 + geom_point(data = rec3, aes(x = lon, y = lat), shape = 16, size = 1)+facet_wrap(~year, ncol = 12) + theme_bw()
+t2 + geom_point(data = data, aes(x = lon, y = lat, colour = factor(depth.x)), shape = 16, size = 1)+facet_wrap(~year, ncol = 12) + theme_bw()
 # t2 + geom_point(data = rec2, aes(x = lon, y = lat, colour = station), shape = 16, size = 1)+facet_wrap(~year, ncol = 8) + theme_bw()
 
 # 密度
