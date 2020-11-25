@@ -9,16 +9,16 @@ require(VAST)
 require(tidyverse)
 
 # read the data
-df = read.csv("data_vast.csv", fileEncoding = "CP932")
+df = read.csv("catch4.csv", fileEncoding = "CP932")
 summary(df)
-# df = df %>% 
-#   filter(sakana == "C", between(year, 2022, 2026)) %>% 
-#   select(year, keido, ido, cpue, sakana) %>% 
-#   rename(lat = ido, lon = keido, spp = sakana)
-# summary(df)
+df = df %>%
+  # filter(sakana == "C", between(year, 2022, 2026)) %>%
+  select(year, lon, lat, raw_catch_kg, swept_area, depth, station) %>% na.omit()
+summary(df)
+
 lonlat = paste(df$lon, df$lat, sep = "_")
 length(unique(lonlat))
-st_dep = paste(df$station.x, df$depth.x, sep = "_")
+st_dep = paste(df$station, df$depth, sep = "_")
 length(unique(st_dep))
 
 # 1. Settings ------------------------------------------------------
@@ -62,7 +62,7 @@ capture.output(Record, file = paste0(DateFile, "/Record.txt"))
 # 2. Prepare the data ----------------------------------------------
 # 2.1 Data-frame
 head(df)
-Data_Geostat = df %>% select(year, lon, lat, mean_dens, A) %>% rename(Year = year, Lon = lon, Lat = lat, Catch_KG = mean_dens, AreaSwept_km2 = A)
+Data_Geostat = df %>% select(year, lon, lat, raw_catch_kg, swept_area) %>% rename(Year = year, Lon = lon, Lat = lat, Catch_KG = raw_catch_kg, AreaSwept_km2 = swept_area)
 
 # 2.2 Extrapolation grid
 Extrapolation_List = FishStatsUtils::make_extrapolation_info(
