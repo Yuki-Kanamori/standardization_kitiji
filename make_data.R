@@ -40,7 +40,7 @@ unique(area$和名)
 colnames(area)
 area = area[, c(-1:-3, -15:-166)]
 colnames(area)
-colnames(area) = c("sokutei", "gyokaku_koritu", "nanboku", "syukei_tanni", "syukei_tanni_mesyo", "area_A", "station", "depth", "ami", "swept_area", "raw_N", "file", "year")
+colnames(area) = c("sokutei", "gyokaku_koritu", "nanboku", "syukei_tanni", "syukei_tanni_meisyo", "area_A", "station", "depth", "ami", "swept_area", "raw_N", "file", "year")
 summary(area) #NA無し
 
 setwd(dir1)
@@ -49,7 +49,7 @@ write.csv(area, "area.csv", fileEncoding = "CP932")
 
 # bind ----------------------------------------------------------
 catch2 = catch %>% select(-file) %>% mutate(tag = paste(year, station, depth, ami, sep = "_"))
-catch3 = catch2 %>% group_by(tag) %>% summarize(catch_kg = sum(raw_catch_kg))
+catch3 = catch2 %>% group_by(tag) %>% summarize(raw_catch_kg = sum(raw_catch_kg))
 catch3 = catch3 %>% mutate(year = as.numeric(str_sub(tag, 1, 4)), station = str_sub(tag, 6, 6), depth = as.numeric(str_sub(tag, 8,10)), ami = as.numeric(str_sub(tag, 12, 12)))
 
 area2 = area %>% select(-file) %>% mutate(tag = paste(year, station, depth, ami, sep = "_")) %>% select(-year, -station, -depth, -ami)
@@ -65,10 +65,10 @@ check = merge(c_tag, a_tag, by = "tag", all = T)
 
 catch3 = merge(catch3, area2, by = "tag", all = T)
 summary(catch3)
-catch2$raw_N-catch2$raw_N #catchに入っている尾数とareaに入っている尾数のデータが合わない！！！
+catch2$raw_N-area2$raw_N #catchに入っている尾数とareaに入っている尾数のデータが合わない！！！
 
 setwd(dir1)
-write.csv(catch2, "catch_area.csv", fileEncoding = "CP932")
+write.csv(catch3, "catch_area.csv", fileEncoding = "CP932")
 
 
 
@@ -91,27 +91,55 @@ rec = rec %>% mutate(lon = lo1+lo2/60, lat = la1+la2/60) %>% select(-la1, -la2, 
 setwd(dir1)
 write.csv(rec, "lonlat_rec.csv", fileEncoding = "CP932")
 
-rec2 = rec %>% mutate(tag = paste(year, station, depth, sep = "_")) %>% select(-depth, -ami, -file)
+rec2 = rec %>% mutate(tag = paste(year, station, depth, ami, sep = "_")) %>% select(-depth, -ami, -file)
 summary(rec2)
 
-# mean density --------------------------------------------------
-dens = catch3
-dens$dens = dens$catch_kg/dens$swept_area
-summary(dens)
 
-# 網次の扱いが分からない=>平均をとっておく
-dens2 = dens %>% group_by(year, station, depth) %>% summarise(mean_dens = mean(dens)) %>% mutate(tag = paste(year, station, depth, sep = "_")) 
-dens2$year = NULL
-dens2$station = NULL
+# bind ----------------------------------------------------------
+head(catch3,3)
+head(rec2,3)
 
-# 網次の分だけ緯度経度がダブっているので，平均をとる
-rec3 = rec2 %>% group_by(tag) %>% summarize(lon = mean(lon), lat = mean(lat)) %>% mutate(year = as.numeric(str_sub(tag, 1, 4)), station = str_sub(tag, 6, 6), depth = as.numeric(str_sub(tag, 8, 10))) 
-
-dens2 = merge(dens2, rec3 %>% select(-depth), by = "tag", all = T)
-summary(dens2)
+catch4 = merge(catch3, rec2 %>% select(-station, -year), by = "tag")
 
 setwd(dir1)
-write.csv(dens2, "dens_lonlat.csv", fileEncoding = "CP932")
+write.csv(catch4, "catch4.csv", fileEncoding = "CP932")
+
+# # mean density --------------------------------------------------
+# dens = catch3
+# dens$dens = dens$catch_kg/dens$swept_area
+# summary(dens)
+# 
+# # 網次の扱いが分からない=>平均をとっておく
+# dens2 = dens %>% group_by(year, station, depth) %>% summarise(mean_dens = mean(dens)) %>% mutate(tag = paste(year, station, depth, sep = "_")) 
+# dens2$year = NULL
+# dens2$station = NULL
+# 
+# # 網次の分だけ緯度経度がダブっているので，平均をとる
+# rec3 = rec2 %>% group_by(tag) %>% summarize(lon = mean(lon), lat = mean(lat)) %>% mutate(year = as.numeric(str_sub(tag, 1, 4)), station = str_sub(tag, 6, 6), depth = as.numeric(str_sub(tag, 8, 10))) 
+# 
+# dens2 = merge(dens2, rec3 %>% select(-depth), by = "tag", all = T)
+# summary(dens2)
+# 
+# setwd(dir1)
+# write.csv(dens2, "dens_lonlat.csv", fileEncoding = "CP932")
+
+
+
+# # 網次の扱い -------------------------------------------------------------
+# # 網次の扱いが分からない=>平均をとっておく
+# catch3 = catch3 %>% group_by(year, station, depth) %>% summarise(mean_raw_catch_kg = mean(raw_catch_kg)) %>% mutate(tag = paste(year, station, depth, sep = "_"))
+# catch3$year = NULL
+# catch3$station = NULL
+# 
+# # 網次の分だけ緯度経度がダブっているので，平均をとる
+# rec3 = rec2 %>% group_by(tag) %>% summarize(lon = mean(lon), lat = mean(lat)) %>% mutate(year = as.numeric(str_sub(tag, 1, 4)), station = str_sub(tag, 6, 6), depth = as.numeric(str_sub(tag, 8, 10))) 
+# 
+# catch3 = merge(catch3, rec3 %>% select(-depth), by = "tag", all = T)
+# summary(catch3)
+# 
+# setwd(dir1)
+# write.csv(dens2, "dens_lonlat.csv", fileEncoding = "CP932")
+
 
 
 # add the area in each station and depth ------------------------
