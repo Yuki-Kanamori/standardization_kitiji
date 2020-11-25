@@ -192,8 +192,8 @@ t2 + geom_point(data = rec3, aes(x = lon, y = lat), shape = 16, size = 1)+facet_
 t2 + geom_point(data = catch4, aes(x = lon, y = lat), shape = 16, size = 1)+facet_wrap(~year, ncol = 12) + theme_bw()
 # t2 + geom_point(data = rec2, aes(x = lon, y = lat, colour = station), shape = 16, size = 1)+facet_wrap(~year, ncol = 8) + theme_bw()
 
-# 密度
+# catch kg
 t2 + geom_point(data = catch4 %>% na.omit(), aes(x = lon, y = lat, colour = raw_catch_kg), shape = 16, size = 1)+facet_wrap(~year, ncol = 12) + scale_colour_gradientn(colours = c("black", "blue", "cyan", "green", "yellow", "orange", "red", "darkred"))+ theme_bw()
 
 # catch only
-t2 + geom_point(data = dens3 %>% filter(raw_catch_kg > 0) %>% na.omit(), aes(x = lon, y = lat, colour = mean_dens), shape = 16, size = 1)+facet_wrap(~year, ncol = 12) + scale_colour_gradientn(colours = c("black", "blue", "cyan", "green", "yellow", "orange", "red", "darkred"))+ theme_bw()
+t2 + geom_point(data = catch4 %>% filter(raw_catch_kg > 0) %>% na.omit(), aes(x = lon, y = lat, colour = raw_catch_kg), shape = 16, size = 1)+facet_wrap(~year, ncol = 12) + scale_colour_gradientn(colours = c("black", "blue", "cyan", "green", "yellow", "orange", "red", "darkred"))+ theme_bw()
