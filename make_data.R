@@ -189,11 +189,11 @@ jap_cog <- jap[jap$lat > 36 & jap$lat < 41.5 & jap$long > 140.6 & jap$long < 143
 t2 <- p + geom_polygon(data = jap_cog, aes(x=long, y=lat, group=group), colour="gray 50", fill="gray 50")
 # + coord_map(xlim = c(139.5, 140.3), ylim = c(35, 35.75))
 t2 + geom_point(data = rec3, aes(x = lon, y = lat), shape = 16, size = 1)+facet_wrap(~year, ncol = 12) + theme_bw()
-t2 + geom_point(data = data, aes(x = lon, y = lat, colour = factor(depth.x)), shape = 16, size = 1)+facet_wrap(~year, ncol = 12) + theme_bw()
+t2 + geom_point(data = catch4, aes(x = lon, y = lat), shape = 16, size = 1)+facet_wrap(~year, ncol = 12) + theme_bw()
 # t2 + geom_point(data = rec2, aes(x = lon, y = lat, colour = station), shape = 16, size = 1)+facet_wrap(~year, ncol = 8) + theme_bw()
 
 # 密度
-t2 + geom_point(data = data %>% na.omit(), aes(x = lon, y = lat, colour = mean_dens), shape = 16, size = 1)+facet_wrap(~year, ncol = 12) + scale_colour_gradientn(colours = c("black", "blue", "cyan", "green", "yellow", "orange", "red", "darkred"))+ theme_bw()
+t2 + geom_point(data = catch4 %>% na.omit(), aes(x = lon, y = lat, colour = raw_catch_kg), shape = 16, size = 1)+facet_wrap(~year, ncol = 12) + scale_colour_gradientn(colours = c("black", "blue", "cyan", "green", "yellow", "orange", "red", "darkred"))+ theme_bw()
 
 # catch only
-t2 + geom_point(data = dens3 %>% filter(mean_dens > 0) %>% na.omit(), aes(x = lon, y = lat, colour = mean_dens), shape = 16, size = 1)+facet_wrap(~year, ncol = 12) + scale_colour_gradientn(colours = c("black", "blue", "cyan", "green", "yellow", "orange", "red", "darkred"))+ theme_bw()
+t2 + geom_point(data = dens3 %>% filter(raw_catch_kg > 0) %>% na.omit(), aes(x = lon, y = lat, colour = mean_dens), shape = 16, size = 1)+facet_wrap(~year, ncol = 12) + scale_colour_gradientn(colours = c("black", "blue", "cyan", "green", "yellow", "orange", "red", "darkred"))+ theme_bw()
