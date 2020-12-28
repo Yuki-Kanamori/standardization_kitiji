@@ -55,7 +55,7 @@ check[is.na(check)] = -100
 summary(check)
 check2 = check %>% filter(lon == -100)
 
-
+kiti = kiti %>% rename(N = 漁獲尾数, area = 曳網面積)
 
 
 setwd(dir1)
