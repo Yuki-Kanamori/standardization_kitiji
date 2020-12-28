@@ -24,6 +24,7 @@ length(unique(st_dep))
 # 1. Settings ------------------------------------------------------
 # 1.1 Version for cpp code
 Version = get_latest_version(package = "VAST")
+# Version = "VAST_v4_2_0"
 
 # 1.2 Spatial settings
 Method = c("Grid", "Mesh", "Spherical_mesh")[2]
