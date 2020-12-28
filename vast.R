@@ -1,6 +1,6 @@
 
 # 0. Prepare the data -------------------------------------------
-dirname = "/Users/Yuki/Dropbox/sokouo1/make_VASTdata"
+dirname = "/Users/Yuki/Dropbox/sokouo1/ws"
 setwd(dir = dirname)
 
 # Packages
@@ -9,11 +9,11 @@ require(VAST)
 require(tidyverse)
 
 # read the data
-df = read.csv("catch4.csv", fileEncoding = "CP932")
+df = read.csv("kiti.csv", fileEncoding = "CP932")
 summary(df)
 df = df %>%
   # filter(sakana == "C", between(year, 2022, 2026)) %>%
-  select(year, lon, lat, raw_catch_kg, swept_area, depth, station) %>% na.omit()
+  select(year, station, depth, lon, lat, d, N, area, tag)
 summary(df)
 
 lonlat = paste(df$lon, df$lat, sep = "_")
@@ -35,7 +35,7 @@ n_x = 100
 FieldConfig = c(Omega1 = 1, Epsilon1 = 1, Omega2 = 1, Epsilon2 = 1) #factor analysis
 RhoConfig = c(Beta1 = 0, Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0) #0: fixed, 1: independent, 2:RW, 3:constant, 4:AR
 OverdispersionConfig = c("Eta1" = 0, "Eta2" = 0) #overdispersion
-ObsModel = c(PosDist = 2, Link = 0)
+ObsModel = c(PosDist = 7, Link = 0)
 Options = c(SD_site_density = 0, SD_site_logdensity = 0,
             Calculate_Range = 1, Calculate_evenness = 0, 
             Calculate_effective_area = 1, Calculate_Cov_SE = 0, 
@@ -48,7 +48,7 @@ strata.limits = data.frame('STRATA'="All_areas")
 Region = "others"
 
 # 1.6 Save settings
-DateFile = paste0(getwd(), "/vast", Sys.Date(), "_lnorm_log", n_x)
+DateFile = paste0(getwd(), "/vast", Sys.Date(), "_pois", n_x)
 dir.create(DateFile)
 Record = list(Version = Version, Method = Method, grid_size_km = grid_size_km, n_x = n_x, 
               FieldConfig = FieldConfig, RhoConfig = RhoConfig, OverdispersionConfig = OverdispersionConfig, 
@@ -62,14 +62,14 @@ capture.output(Record, file = paste0(DateFile, "/Record.txt"))
 # 2. Prepare the data ----------------------------------------------
 # 2.1 Data-frame
 head(df)
-Data_Geostat = df %>% select(year, lon, lat, raw_catch_kg, swept_area) %>% rename(Year = year, Lon = lon, Lat = lat, Catch_KG = raw_catch_kg, AreaSwept_km2 = swept_area)
+Data_Geostat = df %>% select(year, lon, lat, N, area) %>% rename(Year = year, Lon = lon, Lat = lat, Catch_KG = N, AreaSwept_km2 = area)
 
 # 2.2 Extrapolation grid
 Extrapolation_List = FishStatsUtils::make_extrapolation_info(
   Regio = Region, #zone range in Japan is 51:56
   strata.limits = strata.limits, 
   observations_LL = Data_Geostat[, c("Lat", "Lon")]
-)
+) #zone = 37!!!
 
 # 2.3 derived objects for spatio-temporal estimation
 Spatial_List = FishStatsUtils::make_spatial_info(
