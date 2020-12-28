@@ -47,7 +47,7 @@ summary(area)
 area = area %>% mutate(tag = paste(year, STATIONコード, 水深, 網次, sep = "_"))
 
 kiti = left_join(catch_kiti, area %>% select(-year, -STATIONコード, -水深, -網次), by = c("tag"))
-kiti = kiti %>% mutate(lon = 巻上開始時緯度+巻上開始時緯度分/60, lat = 巻上開始時経度+巻上開始時経度分/60) %>% select(-巻上開始時緯度, -巻上開始時緯度分, -巻上開始時経度, -巻上開始時経度分) %>% mutate(d = 漁獲尾数/曳網面積)
+kiti = kiti %>% mutate(lat = 巻上開始時緯度+巻上開始時緯度分/60, lon = 巻上開始時経度+巻上開始時経度分/60) %>% select(-巻上開始時緯度, -巻上開始時緯度分, -巻上開始時経度, -巻上開始時経度分) %>% mutate(d = 漁獲尾数/曳網面積)
 
 summary(kiti)
 check = kiti 
