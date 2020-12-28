@@ -36,7 +36,7 @@ n_x = 100
 FieldConfig = c(Omega1 = 1, Epsilon1 = 1, Omega2 = 1, Epsilon2 = 1) #factor analysis
 RhoConfig = c(Beta1 = 0, Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0) #0: fixed, 1: independent, 2:RW, 3:constant, 4:AR
 OverdispersionConfig = c("Eta1" = 0, "Eta2" = 0) #overdispersion
-ObsModel = c(PosDist = 7, Link = 0)
+ObsModel = c(PosDist = 1, Link = 0)
 Options = c(SD_site_density = 0, SD_site_logdensity = 0,
             Calculate_Range = 1, Calculate_evenness = 0, 
             Calculate_effective_area = 1, Calculate_Cov_SE = 0, 
@@ -49,7 +49,7 @@ strata.limits = data.frame('STRATA'="All_areas")
 Region = "others"
 
 # 1.6 Save settings
-DateFile = paste0(getwd(), "/vast", Sys.Date(), "_pois", n_x)
+DateFile = paste0(getwd(), "/vast", Sys.Date(), "_dens_lognorm", n_x)
 dir.create(DateFile)
 Record = list(Version = Version, Method = Method, grid_size_km = grid_size_km, n_x = n_x, 
               FieldConfig = FieldConfig, RhoConfig = RhoConfig, OverdispersionConfig = OverdispersionConfig, 
@@ -63,7 +63,8 @@ capture.output(Record, file = paste0(DateFile, "/Record.txt"))
 # 2. Prepare the data ----------------------------------------------
 # 2.1 Data-frame
 head(df)
-Data_Geostat = df %>% select(year, lon, lat, N, area) %>% rename(Year = year, Lon = lon, Lat = lat, Catch_KG = N, AreaSwept_km2 = area)
+# Data_Geostat = df %>% select(year, lon, lat, N, area) %>% rename(Year = year, Lon = lon, Lat = lat, Catch_KG = N, AreaSwept_km2 = area)
+Data_Geostat = df %>% select(year, lon, lat, d) %>% rename(Year = year, Lon = lon, Lat = lat, Catch_KG = d)
 
 # 2.2 Extrapolation grid
 Extrapolation_List = FishStatsUtils::make_extrapolation_info(
@@ -101,8 +102,8 @@ TmbData = make_data(
   ObsModel = ObsModel, 
   c_iz = rep(0, nrow(Data_Geostat)), 
   b_i = Data_Geostat[, 'Catch_KG'], 
-  # a_i = rep(1, nrow(Data_Geostat)), #cpue
-  a_i = Data_Geostat[, 'AreaSwept_km2'], # catch and effort
+   a_i = rep(1, nrow(Data_Geostat)), #cpue
+  #a_i = Data_Geostat[, 'AreaSwept_km2'], # catch and effort
   s_i = Data_Geostat[, 'knot_i'] - 1,
   t_i = Data_Geostat[, 'Year'], 
   spatial_list = Spatial_List, 
@@ -232,3 +233,27 @@ plot_range_index(Report = Report,
                  Znames = colnames(TmbData$Z_xm), 
                  PlotDir = DateFile, 
                  Year_Set = Year_Set)
+
+
+# ggvast --------------------------------------------------------
+# require(devtools)
+# install_github("Yuki-Kanamori/ggvast")
+
+require(ggvast)
+
+# 0.1 set the directory ---------------------------------------------
+vast_output_dirname = "/Users/Yuki/Dropbox/sokouo1/ws/vast2020-12-28_dens_lognorm100"
+fig_output_dirname = "/Users/Yuki/Dropbox/sokouo1/ws/vast2020-12-28_dens_lognorm100"
+setwd(dir = vast_output_dirname)
+
+# 0.2 load the data -------------------------------------------------
+load("Save.RData")
+DG = read.csv("Data_Geostat.csv")
+
+# 2. get dens --------------------------------------------------
+# make a data-frame
+category_name = c("kitiji") #カテゴリーの名前（魚種名や銘柄など）
+df_dens = ggvast::get_dens(category_name = category_name)
+
+setwd(fig_output_dirname)
+write.csv(df_dens, "est.csv")
