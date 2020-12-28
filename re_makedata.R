@@ -22,7 +22,12 @@ for(i in 1:length(files)){
   catch = rbind(catch, data)
 }
 summary(catch)
-catch_kiti = catch %>% filter(和名 == "キチジ")
+catch_kiti = catch %>% filter(和名 == "キチジ") %>% mutate(tag = paste(year, STATIONコード, 水深, 網次, sep = "_"))
+
+# catch_kiti = catch %>% filter(和名 == "キチジ") %>% mutate(tag = paste(STATIONコード, 水深,  sep = "_"))
+# colnames(catch_kiti)
+# kiti = catch_kiti %>% group_by(year, tag) %>% summarize(catchN = sum(漁獲尾数))
+# # %>% mutate(station = str_sub(tag, 1, 1), depth = str_sub(tag, 3, 5))
 
 
 
@@ -34,10 +39,15 @@ files = list.files(path)
 
 area = NULL
 for(i in 1:length(files)){
-  data = read.xlsx(paste0(files[i]), sheet = 1) %>% select(STATIONコード, 水深, 網次, 巻上開始時緯度, 巻上開始時緯度分, 巻上開始時経度, 巻上開始時経度分, 曳網面積) %>% mutate(year = as.numeric(str_sub(files[i], -8, -5)))
+  data = read.xlsx(paste0(files[i]), sheet = 1) %>% select(STATIONコード, 水深, 網次, 巻上開始時緯度, 巻上開始時緯度分, 巻上開始時経度, 巻上開始時経度分, 曳網面積) %>% mutate(year = as.numeric(str_sub(files[i], -9, -6)))
   
   area = rbind(area, data)
 }
 summary(area)
-# area$tag = paste(STATIONコード, 水深，網次, sep = "_")
-area = area %>% mutate(tag = paste(STATIONコード, 水深, 網次, sep = "_"))
+area = area %>% mutate(tag = paste(year, STATIONコード, 水深, 網次, sep = "_"))
+
+kiti = left_join(catch_kiti, area %>% select(-year, -STATIONコード, -水深, -網次), by = c("tag"))
+kiti = kiti %>% mutate(lon = 巻上開始時緯度+巻上開始時緯度分/60, lat = 巻上開始時経度+巻上開始時経度分/60) %>% select(-巻上開始時緯度, -巻上開始時緯度分, -巻上開始時経度, -巻上開始時経度分) %>% mutate(d = 漁獲尾数/曳網面積)
+
+setwd(dir1)
+write.csv(kiti, "kiti.csv", fileEncoding = "CP932")
