@@ -64,14 +64,14 @@ capture.output(Record, file = paste0(DateFile, "/Record.txt"))
 # 2.1 Data-frame
 head(df)
 # Data_Geostat = df %>% select(year, lon, lat, N, area) %>% rename(Year = year, Lon = lon, Lat = lat, Catch_KG = N, AreaSwept_km2 = area)
-Data_Geostat = df %>% select(year, lon, lat, d) %>% rename(Year = year, Lon = lon, Lat = lat, Catch_KG = d)
+Data_Geostat = df %>% select(year, station, depth, lon, lat, d) %>% rename(Year = year, Lon = lon, Lat = lat, Catch_KG = d)
 
 # 2.2 Extrapolation grid
 Extrapolation_List = FishStatsUtils::make_extrapolation_info(
   Regio = Region, #zone range in Japan is 51:56
   strata.limits = strata.limits, 
   observations_LL = Data_Geostat[, c("Lat", "Lon")]
-) #zone = 37!!!
+)
 
 # 2.3 derived objects for spatio-temporal estimation
 Spatial_List = FishStatsUtils::make_spatial_info(
@@ -242,8 +242,8 @@ plot_range_index(Report = Report,
 require(ggvast)
 
 # 0.1 set the directory ---------------------------------------------
-vast_output_dirname = "/Users/Yuki/Dropbox/sokouo1/ws/vast2020-12-28_dens_lognorm100"
-fig_output_dirname = "/Users/Yuki/Dropbox/sokouo1/ws/vast2020-12-28_dens_lognorm100"
+vast_output_dirname = "/Users/Yuki/Dropbox/sokouo1/ws/vast2021-01-01_dens_lognorm100"
+fig_output_dirname = "/Users/Yuki/Dropbox/sokouo1/ws/vast2021-01-01_dens_lognorm100"
 setwd(dir = vast_output_dirname)
 
 # 0.2 load the data -------------------------------------------------
