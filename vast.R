@@ -604,3 +604,39 @@ level_h = geom_hline(yintercept = high/1000, linetype = "dashed", color = "gray5
 fig10 = g+p+l+lab+theme_bw(base_family = "HiraKakuPro-W3")+ theme(legend.position = 'none')+th+theme(legend.position = 'none')+scale_x_continuous(breaks=seq(1996, 2020, by = 2), expand = c(0.03, 0.03))+level_l+level_h
 ggsave(file = "fig10_vast.png", plot = fig10, units = "in", width = 11.69, height = 8.27)
 
+check_trend = trend %>% filter(year > 2015)
+summary(lm(total/1000 ~ year, data = check_trend))
+
+
+### year trend of stock number (fig. 11)
+est = est %>% mutate(age2 = ifelse(age > 4, "5歳以上", "2-4歳"))
+summary(est)
+
+est2 = est
+est2[is.na(est2)] = 0
+est2 = ddply(est2, .(year, age2), summarize, total = sum(number))
+summary(est2)
+
+levels(est2$age2) 
+unique(est$age2)
+est2$age2 = factor(est2$age2, levels = c("5歳以上", "2-4歳"))
+levels(est2$age2)
+
+g = ggplot(est2, aes(x = year, y = total/1000000, fill = age2))
+b = geom_bar(stat = "identity", width = 0.5, colour = "black")
+lab = labs(x = "年", y = "資源尾数（百万尾）", legend = NULL)
+col_age = c("black", "white")
+th = theme(panel.grid.major = element_blank(),
+           panel.grid.minor = element_blank(),
+           axis.text.x = element_text(size = rel(1.8), angle = 90, colour = "black"),
+           axis.text.y = element_text(size = rel(1.8), colour = "black"),
+           axis.title.x = element_text(size = rel(2)),
+           axis.title.y = element_text(size = rel(2)),
+           legend.title = element_blank(),
+           legend.text = element_text(size = rel(1.8)),
+           strip.text.x = element_text(size = rel(1.8)),
+           legend.position = c(0.1, 0.8),
+           legend.background = element_rect(fill = "white", size = 0.4, linetype = "solid", colour = "black"))
+c = scale_fill_manual(values =  c("black", "white"))
+fig11 = g+b+lab+c+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(breaks=seq(1996, 2020, by = 2), expand = c(0, 0.5))+scale_y_continuous(expand = c(0,0),limits = c(0, 200))
+ggsave(file = "fig11_vast.png", plot = fig11, units = "in", width = 11.69, height = 8.27)
