@@ -26,3 +26,13 @@ t2 + geom_point(data = DG %>% na.omit(), aes(x = Lon, y = Lat, colour = log(Catc
 # DG2 = DG %>% filter(Catch_KG > 0)
 # t2 + geom_point(data = DG2 %>% na.omit(), aes(x = Lon, y = Lat, colour = log(Catch_KG)), shape = 16, size = 1)+facet_wrap(~Year, ncol = 13) + scale_colour_gradientn(colours = c("black", "blue", "cyan", "green", "yellow", "orange", "red", "darkred"))+ theme_bw() + th + labs(colour = "log (catch N)")
 
+
+
+# vast ----------------------------------------------------------
+category_name = c("kitiji") #カテゴリーの名前（魚種名や銘柄など）
+# 2. get dens --------------------------------------------------
+# make a data-frame
+df_dens = ggvast::get_dens(category_name = category_name)
+
+# catch N
+t2 + geom_point(data = df_dens, aes(x = lon, y = lat, colour = log_abundance), shape = 16, size = 1)+facet_wrap(~year, ncol = 13) + scale_colour_gradientn(colours = c("black", "blue", "cyan", "green", "yellow", "orange", "red", "darkred"))+ theme_bw() +th +labs(colour = "log (N)")
