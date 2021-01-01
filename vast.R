@@ -304,5 +304,17 @@ plot(x = yearN$year, y = yearN$N, type = "b")
 
 
 # 年齢分解 ----------------------------------------------------------
+setwd(dir = dirname)
+require(openxlsx)
+al = NULL
+for(i in 1:25){
+  data = read.xlsx("agelength.xlsx", sheet = i)
+  data[is.na(data)] = 0
+  data = data %>% gather(key = age, value =number , 2:ncol(data)) %>% dplyr::rename(length_cm = "体長(cm)") %>% mutate(year = as.numeric(paste0(1995+(i-1))))
+  al = rbind(al, data)
+}
+summary(al)
 
-
+al_sum = al %>% group_by(year) %>% summarize(totalN = sum(number))
+al = left_join(al, al_sum, by = "year") %>% mutate(freq = number/totalN)
+yearN = left_join(yearN, al, by = "year") %>% mutate(decompN = N*freq)
