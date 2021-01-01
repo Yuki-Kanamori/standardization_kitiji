@@ -275,6 +275,34 @@ df_dens = ggvast::get_dens(category_name = category_name)
 setwd(fig_output_dirname)
 write.csv(df_dens, "est.csv")
 
+# 3. map dens ---------------------------------------------------
+#DG2 = DG %>% filter(Catch_KG > 0) #> 0データのみをプロットしたい場合
+
+data = df_dens #VASTの時
+#data = DG #ノミナルの時
+#data = DG2 #ノミナル>0の時
+
+#require(maps)
+#unique(map_data("world")$region)
+region = "Japan" #作図する地域を選ぶ
+scale_name = "Log density" #凡例　色の違いが何を表しているのかを書く
+ncol = 7 #横にいくつ図を並べるか（最大数 = 年数）
+shape = 16 #16はclosed dot
+size = 1.9 #shapeの大きさ
+zoom_out_lon = 1 #mapの拡大・縮小（1がデフォルト，数字が大きくなるほど拡大する．1以下で縮小する）
+zoom_out_lat = 1 #mapの拡大・縮小（1がデフォルト，数字が大きくなるほど拡大する．1以下で縮小する）
+
+# make figures
+ggvast::map_dens(data = data,
+                 region = region,
+                 scale_name = scale_name,
+                 ncol = ncol,
+                 shape = shape,
+                 size = size,
+                 zoom_out_lon,
+                 zoom_out_lat,
+                 fig_output_dirname =  fig_output_dirname)
+
 
 
 # 引き延ばし ---------------------------------------------------------
