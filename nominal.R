@@ -296,5 +296,5 @@ th = theme(panel.grid.major = element_blank(),
 level_l = geom_hline(yintercept = low/1000, linetype = "dashed", color = "gray50")
 level_h = geom_hline(yintercept = high/1000, linetype = "dashed", color = "gray50")
 fig10 = g+p+l+lab+theme_bw(base_family = "HiraKakuPro-W3")+ theme(legend.position = 'none')+th+theme(legend.position = 'none')+scale_x_continuous(breaks=seq(1996, 2020, by = 2), expand = c(0.03, 0.03))+level_l+level_h
-ggsave(file = "fig10_vast.png", plot = fig10, units = "in", width = 11.69, height = 8.27)
+ggsave(file = "fig10_nominal.png", plot = fig10, units = "in", width = 11.69, height = 8.27)
 
