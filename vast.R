@@ -276,6 +276,8 @@ setwd(fig_output_dirname)
 write.csv(df_dens, "est.csv")
 
 
+
+# 引き延ばし ---------------------------------------------------------
 DG2 = DG %>% mutate(tag = paste(Lon, Lat, sep = "_"))
 tag = DG2 %>% select(tag, depth, station, knot_i)
 
@@ -290,4 +292,17 @@ unique(cn$NS)
 unique(cn$station)
 cnE = cn %>% filter(station == "E")
 
-d = check %>% group_by(year, depth, NS) %>% summarize(mean_d = mean(log_abundance))
+d = check %>% group_by(year, depth, NS) %>% summarize(mean_d = mean(exp(log_abundance)))
+
+
+setwd(dir = dirname)
+A = read.csv("Adata.csv") %>% select(-memo)
+d = left_join(d, A, by = c("depth", "NS")) %>% mutate(extentN = A*mean_d)
+yearN = d %>% group_by(year) %>% summarize(N = sum(extentN))
+plot(x = yearN$year, y = yearN$N, type = "b")
+
+
+
+# 年齢分解 ----------------------------------------------------------
+
+
