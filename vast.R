@@ -250,10 +250,44 @@ setwd(dir = vast_output_dirname)
 load("Save.RData")
 DG = read.csv("Data_Geostat.csv")
 
+# 1. plot index ------------------------------------------------
+# vast output
+setwd(dir = vast_output_dirname)
+vast_index = read.csv("Table_for_SS3.csv") %>% mutate(type = "Standardized")
+
+# nominal
+levels(DG$spp) #単一種の時はNULLと出る
+category_name = c("kitiji") #カテゴリーの名前（魚種名や銘柄など）
+
+# make a figure
+# nominalにはerror barが無いため，geom_errorbarのwarningが出るが問題ない
+ggvast::plot_index(vast_index = vast_index,
+                   DG = DG,
+                   category_name = category_name,
+                   fig_output_dirname = fig_output_dirname)
+
+
+
 # 2. get dens --------------------------------------------------
 # make a data-frame
-category_name = c("kitiji") #カテゴリーの名前（魚種名や銘柄など）
 df_dens = ggvast::get_dens(category_name = category_name)
 
 setwd(fig_output_dirname)
 write.csv(df_dens, "est.csv")
+
+
+DG2 = DG %>% mutate(tag = paste(Lon, Lat, sep = "_"))
+tag = DG2 %>% select(tag, depth, station, knot_i)
+
+df_dens2 = df_dens %>% mutate(tag = paste(lon, lat, sep = "_"))
+
+check = left_join(df_dens2, tag, by = "tag")
+summary(check)
+
+check = check %>% mutate(NS = ifelse(check$lat > 38.50, "N", "S"))
+cn = check %>% filter(NS == "N")
+unique(cn$NS)
+unique(cn$station)
+cnE = cn %>% filter(station == "E")
+
+d = check %>% group_by(year, depth, NS) %>% summarize(mean_d = mean(log_abundance))
