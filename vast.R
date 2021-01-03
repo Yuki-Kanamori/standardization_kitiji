@@ -309,26 +309,34 @@ ggvast::map_dens(data = data,
 DG2 = DG %>% mutate(tag = paste(Lon, Lat, sep = "_"))
 tag = DG2 %>% select(tag, depth, station, knot_i)
 
-df_dens2 = df_dens %>% mutate(tag = paste(lon, lat, sep = "_"))
+df_dens2 = df_dens %>% mutate(tag = paste(lon, lat, sep = "_")) %>% select(-category_name)
 
-check = left_join(df_dens2, tag, by = "tag")
+check = left_join(df_dens2, tag, by = "tag") #129250
 summary(check)
 
+# check = check %>% mutate(NS = ifelse(check$lat > 38.50, "N", "S"))
+# cn = check %>% filter(NS == "N")
+# unique(cn$NS)
+# unique(cn$station)
+# cnE = cn %>% filter(station == "E")
+# 
+# d = check %>% dplyr::group_by(year, depth, NS) %>% dplyr::summarize(mean_d = mean(exp(log_abundance)))
+# 
+# 
+# setwd(dir = dirname)
+# A = read.csv("Adata.csv") %>% select(-memo)
+# d = left_join(d, A, by = c("depth", "NS")) %>% mutate(extentN = A*mean_d)
+# yearN = d %>% dplyr::group_by(year) %>% dplyr::summarize(N = sum(extentN))
+# plot(x = yearN$year, y = yearN$N, type = "b")
+
+check = check %>% select(-tag) %>% mutate(tag = paste(station, depth, sep = "_"))
+setwd("/Users/Yuki/Dropbox/sokouo1/make_VASTdata")
+A = read.csv("area_A.csv") %>% select(-X, -station, -depth) #113
+check = left_join(check, A, by = "tag") %>% mutate(extentN = area_A*exp(log_abundance)) #129250
 check = check %>% mutate(NS = ifelse(check$lat > 38.50, "N", "S"))
-cn = check %>% filter(NS == "N")
-unique(cn$NS)
-unique(cn$station)
-cnE = cn %>% filter(station == "E")
-
-d = check %>% dplyr::group_by(year, depth, NS) %>% dplyr::summarize(mean_d = mean(exp(log_abundance)))
-
-
-setwd(dir = dirname)
-A = read.csv("Adata.csv") %>% select(-memo)
-d = left_join(d, A, by = c("depth", "NS")) %>% mutate(extentN = A*mean_d)
-yearN = d %>% dplyr::group_by(year) %>% dplyr::summarize(N = sum(extentN))
+d = check %>% dplyr::group_by(year, depth, NS) %>% dplyr::summarize(mean_d = mean(extentN))
+yearN = d %>% dplyr::group_by(year) %>% dplyr::summarize(N = sum(mean_d))
 plot(x = yearN$year, y = yearN$N, type = "b")
-
 
 
 # 年齢分解 ----------------------------------------------------------
