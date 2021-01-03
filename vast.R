@@ -320,13 +320,13 @@ unique(cn$NS)
 unique(cn$station)
 cnE = cn %>% filter(station == "E")
 
-d = check %>% group_by(year, depth, NS) %>% summarize(mean_d = mean(exp(log_abundance)))
+d = check %>% dplyr::group_by(year, depth, NS) %>% dplyr::summarize(mean_d = mean(exp(log_abundance)))
 
 
 setwd(dir = dirname)
 A = read.csv("Adata.csv") %>% select(-memo)
 d = left_join(d, A, by = c("depth", "NS")) %>% mutate(extentN = A*mean_d)
-yearN = d %>% group_by(year) %>% summarize(N = sum(extentN))
+yearN = d %>% dplyr::group_by(year) %>% dplyr::summarize(N = sum(extentN))
 plot(x = yearN$year, y = yearN$N, type = "b")
 
 
@@ -343,9 +343,12 @@ for(i in 1:25){
 }
 summary(al)
 
-al_sum = al %>% group_by(year) %>% summarize(totalN = sum(number))
+al_sum = al %>% dplyr::group_by(year) %>% dplyr::summarize(totalN = sum(number))
 al = left_join(al, al_sum, by = "year") %>% mutate(freq = number/totalN)
 yearN = left_join(yearN, al, by = "year") %>% mutate(decompN = N*freq)
+
+temp2 = yearN %>% dplyr::filter(age != "0") %>% dplyr::group_by(year) %>% dplyr::summarize(totalN = sum(decompN))
+plot(x = temp2$year, y = temp2$totalN, type = "b")
 
 
 
