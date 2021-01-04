@@ -72,6 +72,12 @@ setwd("/Users/Yuki/Dropbox/sokouo1/make_VASTdata")
 A = read.csv("area_A.csv") %>% select(-X, -station, -depth) #113
 check = left_join(check, A, by = "tag") %>% mutate(extentN = area_A*exp(log_abundance)) #129250
 check = check %>% mutate(NS = ifelse(check$lat > 38.50, "N", "S"))
+
+unique(check$station)
+remove = c("A", "B", "C", "D", "E", "F", "G", "H")
+check2 = check %>% filter(station %in% remove)
+unique(check2$station)
+
 d = check %>% dplyr::group_by(year, depth, NS) %>% dplyr::summarize(mean_d = mean(extentN))
 yearN = d %>% dplyr::group_by(year) %>% dplyr::summarize(N = sum(mean_d))
 plot(x = yearN$year, y = yearN$N, type = "b")
