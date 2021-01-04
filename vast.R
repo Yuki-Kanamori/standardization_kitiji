@@ -304,6 +304,119 @@ ggvast::map_dens(data = data,
                  fig_output_dirname =  fig_output_dirname)
 
 
+# 5. map COG ----------------------------------------------------
+data_type = c("VAST", "nominal")[1]
+
+#unique(map_data("world")$region)
+region = "Japan" #作図する地域を選ぶ
+ncol = 1 #横にいくつ図を並べるか（最大数 = カテゴリー数）
+shape = 16 #16はclosed dot
+size = 1.9 #shapeの大きさ
+use_biascorr = TRUE
+if(data_type == "VAST"){
+  # make COG Table
+  ### this code is from plot_range_index() in FishStatsUtils ###
+  Sdreport = Save[["Opt"]][["SD"]]
+  if("ln_Index_cyl" %in% rownames(TMB::summary.sdreport(Sdreport))){
+    # VAST Version >= 2.0.0
+    CogName = "mean_Z_cym"
+    EffectiveName = "effective_area_cyl"
+    Save[["TmbData"]][["n_t"]] = nrow(Save[["TmbData"]][["t_yz"]])
+  }
+}
+Year_Set = 1:Save$TmbData$n_t
+Years2Include = 1:Save$TmbData$n_t
+strata_names = 1:Save$TmbData$n_l
+category_names = 1:Save$TmbData$n_c
+Return = list( "Year_Set"=Year_Set )
+
+SD = TMB::summary.sdreport(Sdreport)
+SD_mean_Z_ctm = array( NA, dim=c(unlist(Save$TmbData[c('n_c','n_t','n_m')]),2), dimnames=list(NULL,NULL,NULL,c('Estimate','Std. Error')) )
+#use_biascorr = TRUE
+if( use_biascorr==TRUE && "unbiased"%in%names(Sdreport) ){
+  SD_mean_Z_ctm[] = SD[which(rownames(SD)==CogName),c('Est. (bias.correct)','Std. Error')]
+}
+if( !any(is.na(SD_mean_Z_ctm)) ){
+  message("Using bias-corrected estimates for center of gravity...")
+}else{
+  message("Not using bias-corrected estimates for center of gravity...")
+  SD_mean_Z_ctm[] = SD[which(rownames(SD)==CogName),c('Estimate','Std. Error')]
+}
+
+COG_Table = NULL
+for( cI in 1:Save$TmbData$n_c ){
+  for( mI in 1:dim(SD_mean_Z_ctm)[[3]]){
+    Tmp = cbind("m"=mI, "Year"=Year_Set, "COG_hat"=SD_mean_Z_ctm[cI,,mI,'Estimate'], "SE"=SD_mean_Z_ctm[cI,,mI,'Std. Error'])
+    if( Save$TmbData$n_c>1 ) Tmp = cbind( "Category"=category_names[cI], Tmp)
+    COG_Table = rbind(COG_Table, Tmp)
+  }}
+### end the code form plot_range_index() in FishStatsUtils ###
+
+#UTM to longitude and latitude
+#year_set = DG %>% select(Year) %>% distinct(Year, .keep_all = T)
+#cog = read.csv("COG_Table.csv")
+cog = COG_Table
+nyear_set = seq(min(DG$Year), max(DG$Year))
+tag = data.frame(Year = rep(1:length(unique(DG$Year))), Year2 = rep(min(DG$Year):max(DG$Year), each = length(category_name)), Category = rep(category_name))
+
+if(length(unique(category_name)) == 1){
+  cog = cog %>% data.frame() %>% mutate(Category = category_name)
+  cog = merge(cog, tag, by = c("Category", "Year")) %>% arrange(Year)
+}else{
+  cog = cog %>% data.frame()
+  tag2 = data.frame(ncate = unique(cog$Category), Category = category_name)
+  cog = cog %>% rename(ncate = Category)
+  cog = merge(cog, tag2, by = "ncate")
+  cog = merge(cog, tag, by = c("Category", "Year")) %>% arrange(Year)
+}
+
+
+
+lat = cog[cog$m == 1, ]
+lon = cog[cog$m == 2, ]
+x = lat$COG_hat*1000
+y = lon$COG_hat*1000
+xy = cbind(x,y)
+zone = unique(DG$zone)
+lonlat = data.frame(rgdal::project(xy, paste0("+proj=utm +zone=", zone, " ellps=WGS84"), inv = TRUE))
+colnames(lonlat) = c("lon", "lat")
+
+lonlat = cbind(lonlat, lat[, c("Year", "Category")])
+lonlat = merge(lonlat, tag, by = c("Category", "Year"))
+
+#make COG maps
+setwd(dir = fig_output_dirname)
+map = ggplot() + coord_fixed() + xlab("Longitude") + ylab("Latitude")
+world_map = map_data("world")
+region2 = subset(world_map, world_map$region == region)
+local_map = map + geom_polygon(data = region2, aes(x = long, y = lat, group = group), colour = "black", fill = "white") + coord_map(xlim = c(min(lonlat$lon)-0.2, max(lonlat$lon)+0.2), ylim = c(min(lonlat$lat)-0.2, max(lonlat$lat)+0.2))
+th = theme(panel.grid.major = element_blank(),
+           panel.grid.minor = element_blank(),
+           axis.text.x = element_text(size = rel(1.5)),
+           axis.text.y = element_text(size = rel(1.5)),
+           axis.title.x = element_text(size = rel(1.5)),
+           axis.title.y = element_text(size = rel(1.5)),
+           legend.title = element_text(size = 13))
+p = geom_point(data = lonlat, aes(x = lon, y = lat, colour = Year2), shape = shape, size = size)
+f = facet_wrap( ~ Category, ncol = ncol)
+c = scale_colour_gradientn(colours = c("black", "blue", "cyan", "green", "yellow", "orange", "red", "darkred"))
+labs = labs(x = "Longitude", y = "Latitude", colour = "Year")
+
+fig = local_map+theme_bw()+th+p+c+labs
+ggsave(filename = "map_cog.pdf", plot = fig, units = "in", width = 11.69, height = 8.27)
+
+
+
+
+# make figures
+ggvast::map_cog(data_type = data_type,
+                category_name = category_name,
+                region = region,
+                ncol = ncol,
+                shape = shape,
+                size = size,
+                zoom_out_lon,
+                fig_output_dirname = fig_output_dirname)
 
 # 引き延ばし ---------------------------------------------------------
 DG2 = DG %>% mutate(tag = paste(Lon, Lat, sep = "_"))
