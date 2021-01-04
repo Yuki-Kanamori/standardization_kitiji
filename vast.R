@@ -601,7 +601,7 @@ high = max(trend$total)-(max(trend$total)-min(trend$total))*1/3
 g = ggplot(trend, aes(x = year, y = total/1000))
 p = geom_point(shape = 20, size = 6)
 l = geom_line(size = 0.6, linetype = "solid")
-lab = labs(x = "年", y = "資源量（トン）", shape = "")
+lab = labs(x = "年", y = "資源量（千トン）", shape = "")
 th = theme(panel.grid.major = element_blank(),
            panel.grid.minor = element_blank(),
            axis.text.x = element_text(size = rel(1.8), angle = 90, colour = "black"),
