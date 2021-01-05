@@ -770,3 +770,5 @@ th = theme(panel.grid.major = element_blank(),
 c = scale_fill_manual(values =  c("black", "white"))
 fig11 = g+b+lab+c+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(breaks=seq(1996, 2020, by = 2), expand = c(0, 0.5))+scale_y_continuous(expand = c(0,0),limits = c(0, 200))
 ggsave(file = "fig11_vast.png", plot = fig11, units = "in", width = 11.69, height = 8.27)
+
+
