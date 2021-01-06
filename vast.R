@@ -36,7 +36,7 @@ n_x = 100
 FieldConfig = c(Omega1 = 1, Epsilon1 = 1, Omega2 = 1, Epsilon2 = 1) #factor analysis
 RhoConfig = c(Beta1 = 0, Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0) #0: fixed, 1: independent, 2:RW, 3:constant, 4:AR
 OverdispersionConfig = c("Eta1" = 0, "Eta2" = 0) #overdispersion
-ObsModel = c(PosDist = 1, Link = 0)
+ObsModel = c(PosDist = 1, Link = 0) # 1:lognorm, 2:gamma
 Options = c(SD_site_density = 0, SD_site_logdensity = 0,
             Calculate_Range = 1, Calculate_evenness = 0, 
             Calculate_effective_area = 1, Calculate_Cov_SE = 0, 
@@ -49,7 +49,7 @@ strata.limits = data.frame('STRATA'="All_areas")
 Region = "others"
 
 # 1.6 Save settings
-DateFile = paste0(getwd(), "/vast", Sys.Date(), "_dens_lognorm", n_x)
+DateFile = paste0(getwd(), "/vast", Sys.Date(), "_dens_gamma", n_x)
 dir.create(DateFile)
 Record = list(Version = Version, Method = Method, grid_size_km = grid_size_km, n_x = n_x, 
               FieldConfig = FieldConfig, RhoConfig = RhoConfig, OverdispersionConfig = OverdispersionConfig, 
@@ -64,7 +64,7 @@ capture.output(Record, file = paste0(DateFile, "/Record.txt"))
 # 2.1 Data-frame
 head(df)
 # Data_Geostat = df %>% select(year, lon, lat, N, area) %>% rename(Year = year, Lon = lon, Lat = lat, Catch_KG = N, AreaSwept_km2 = area)
-Data_Geostat = df %>% select(year, station, depth, lon, lat, d) %>% rename(Year = year, Lon = lon, Lat = lat, Catch_KG = d)
+Data_Geostat = df %>% select(year, station, depth, lon, lat, d) %>% dplyr::rename(Year = year, Lon = lon, Lat = lat, Catch_KG = d)
 
 # 2.2 Extrapolation grid
 Extrapolation_List = FishStatsUtils::make_extrapolation_info(
