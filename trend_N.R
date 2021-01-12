@@ -84,6 +84,7 @@ plot(x = yearN$year, y = yearN$N, type = "b")
 
 
 # 年齢分解 ----------------------------------------------------------
+dirname = "/Users/Yuki/Dropbox/sokouo1/ws"
 setwd(dir = dirname)
 require(openxlsx)
 al = NULL
