@@ -418,14 +418,14 @@ for(i in min(retro$year.x):max(retro$year.x)){
   t = est %>% filter(year == (i+1)) %>% dplyr::group_by(year) %>% na.omit() %>% dplyr::summarize(number = sum(number), biomass = sum(biomass))
   r0 = rbind(r0, t)
   
-  t2 = retro %>% filter(year.x == i)
+  t2 = retro %>% filter(year.x == i) %>% na.omit()
   # next_year_xxはi+1の予測値
   t2 = t2 %>% mutate(year = as.numeric(year.x)+1) %>% dplyr::group_by(year) %>% dplyr::summarize(e_number = sum(next_year_number), e_biomass = sum(next_year_biomass))
   r1 = rbind(r1, t2)
   
 }
 retro2 = left_join(r0, r1, by = "year") %>% mutate(bias_b = (e_biomass-biomass)/biomass, bias_n = (e_number/number)/number)
-(mean(retro2$bias_b)) #-0.223
+(mean(retro2$bias_b)) #-0.33
 
 
 

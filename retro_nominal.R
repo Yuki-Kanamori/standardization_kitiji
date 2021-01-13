@@ -254,27 +254,27 @@ retro = NULL
 for(i in 1:retro_year){
   # fの3年平均
   # i = 1
-  f_current = fishing_rate %>% filter(year < ((as.numeric(str_sub(Sys.Date(), 1, 4))-(2+i))+1)) %>% filter(year > ((as.numeric(str_sub(Sys.Date(), 1, 4))-(2+i))-3)) %>% dplyr::summarize(mean(f))
+  f_current = fishing_rate %>% filter(year < ((as.numeric(str_sub(Sys.Date(), 1, 4))-(3+i))+1)) %>% filter(year > ((as.numeric(str_sub(Sys.Date(), 1, 4))-(3+i))-3)) %>% dplyr::summarize(mean(f))
   # 2021 - (2+0) - 3 = 2016 => 2017~2019
   # 2021 - (2+1) - 3 = 2015 => 2016~2019
   
   s_current = exp(-(f_current+M))
   
-  s1_current = survival %>% filter(year < ((as.numeric(str_sub(Sys.Date(), 1, 4))-(2+i))+1)) %>% filter(year > ((as.numeric(str_sub(Sys.Date(), 1, 4))-(2+i))-3), age == 2) %>% dplyr::summarize(mean(surv))
+  s1_current = survival %>% filter(year < ((as.numeric(str_sub(Sys.Date(), 1, 4))-(3+i))+1)) %>% filter(year > ((as.numeric(str_sub(Sys.Date(), 1, 4))-(3+i))-3), age == 2) %>% dplyr::summarize(mean(surv))
   
   # number_1old_oct_last = trawl %>% filter(year == as.numeric(str_sub(Sys.Date(), 1, 4))-2, age == 1)%>% dplyr::select(number)/1000 * s1_current
-  number_1old_oct_last = trawl %>% filter(year == as.numeric(str_sub(Sys.Date(), 1, 4))-(2+i), age == 1)
+  number_1old_oct_last = trawl %>% filter(year == as.numeric(str_sub(Sys.Date(), 1, 4))-(3+i), age == 1)
   # number_1old_oct_last = number_1old_oct_last$number/1000 * s1_current
   number_1old_oct_last = number_1old_oct_last$number/1000 * s1_current
   
   number_2old_oct_last = number_1old_oct_last*s1_current
-  number_2old_jan_this = number_2old_oct_last*survival_2month %>% filter(year == as.numeric(str_sub(Sys.Date(), 1, 4))-(2+i)) %>% select(surv)
+  number_2old_jan_this = number_2old_oct_last*survival_2month %>% filter(year == as.numeric(str_sub(Sys.Date(), 1, 4))-(3+i)) %>% select(surv)
   
-  number_2old_jan_this_sel = number_2old_jan_this/q %>% filter(year == as.numeric(str_sub(Sys.Date(), 1, 4))-(2+i), age == 2) %>% select(q)
+  number_2old_jan_this_sel = number_2old_jan_this/q %>% filter(year == as.numeric(str_sub(Sys.Date(), 1, 4))-(3+i), age == 2) %>% select(q)
   
   # the estimated abundance in step 4
-  abund_abc = est %>% filter(year == (as.numeric(str_sub(Sys.Date(), 1, 4))-(1+i))) %>% select(number, biomass, year, age) %>% dplyr::rename(number_est = number, biomass_est = biomass)
-  abund_abc = left_join(abund_abc, weight %>% filter(year == (as.numeric(str_sub(Sys.Date(), 1, 4))-(2+i))), by = c("age"))
+  abund_abc = est %>% filter(year == (as.numeric(str_sub(Sys.Date(), 1, 4))-(2+i))) %>% select(number, biomass, year, age) %>% dplyr::rename(number_est = number, biomass_est = biomass)
+  abund_abc = left_join(abund_abc, weight %>% filter(year == (as.numeric(str_sub(Sys.Date(), 1, 4))-(3+i))), by = c("age"))
   
   next_year = NULL
   for(j in 1:(length(abund_abc$age))){
