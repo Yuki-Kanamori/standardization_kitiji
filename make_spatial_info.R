@@ -21,51 +21,55 @@ make_spatial_info = function( n_x,
                               ... ){
   
   # Deprecated options
-  if( Method=="Spherical_mesh" ){
-    stop("Method=`Spherical_mesh` is not being maintained, but please write the package author if you need to explore this option")
-  }
-  if( Method == "Stream_network" & fine_scale == TRUE ){
-    stop("Please use fine_scale=FALSE with stream network spatial model; feature fine_scale=TRUE not yet supported for stream network spatial model.")
-  }
+  # if( Method=="Spherical_mesh" ){
+  #   stop("Method=`Spherical_mesh` is not being maintained, but please write the package author if you need to explore this option")
+  # }
+  # if( Method == "Stream_network" & fine_scale == TRUE ){
+  #   stop("Please use fine_scale=FALSE with stream network spatial model; feature fine_scale=TRUE not yet supported for stream network spatial model.")
+  # }
   
   # Backwards compatibility for when settings didn't include knot_method, such that settings$knot_method=NULL
   if(is.null(knot_method)) knot_method = "samples"
   
   # Backwards compatible option for different extrapolation grid
   if( missing(LON_intensity) & missing(LAT_intensity) ){
+    
     if( knot_method=="samples" ){
-      LON_intensity = Lon_i
-      LAT_intensity = Lat_i
+      LON_intensity = Lon_i = Data_Geostat[, "Lon"]
+      LAT_intensity = Lat_i = Data_Geostat[, "Lat"]
     }
-    if( knot_method=="grid" ){
-      which_rows = which( Extrapolation_List$Data_Extrap[,'Include']==TRUE & Extrapolation_List[["Area_km2_x"]]>0 & rowSums(Extrapolation_List[["a_el"]])>0 )
-      LON_intensity = Extrapolation_List$Data_Extrap[ which_rows, 'Lon']
-      LAT_intensity = Extrapolation_List$Data_Extrap[ which_rows, 'Lat']
-    }
-    if( !(knot_method %in% c("samples","grid")) ) stop("`knot_method` must be either `samples` or `grid`")
+    
+    # if( knot_method=="grid" ){
+    #   which_rows = which( Extrapolation_List$Data_Extrap[,'Include']==TRUE & Extrapolation_List[["Area_km2_x"]]>0 & rowSums(Extrapolation_List[["a_el"]])>0 )
+    #   LON_intensity = Extrapolation_List$Data_Extrap[ which_rows, 'Lon']
+    #   LAT_intensity = Extrapolation_List$Data_Extrap[ which_rows, 'Lat']
+    # }
+    
+    # if( !(knot_method %in% c("samples","grid")) ) stop("`knot_method` must be either `samples` or `grid`")
   }
   
   # Convert to an Eastings-Northings coordinate system
-  if( Method=="Spherical_mesh" ){
-    loc_i = data.frame( 'Lon'=Lon_i, 'Lat'=Lat_i )
-    # Bounds for 2D AR1 grid
-    Grid_bounds = (grid_size_km/110) * apply(loc_e/(grid_size_km/110), MARGIN=2, FUN=function(vec){trunc(range(vec))+c(0,1)})
-    
-    # Calculate k-means centroids
-    if(is.null(Kmeans)) Kmeans = make_kmeans(n_x=n_x,
-                                             loc_orig=loc_i[,c("Lon", "Lat")], randomseed=randomseed, kmeans_purpose='spatial', backwards_compatible_kmeans=backwards_compatible_kmeans, ... )
-    
-    # Calculate grid for 2D AR1 process
-    loc_grid = expand.grid( 'Lon'=seq(Grid_bounds[1,1],Grid_bounds[2,1],by=grid_size_LL), 'Lat'=seq(Grid_bounds[1,2],Grid_bounds[2,2],by=grid_size_LL) )
-    Which = sort(unique(RANN::nn2(data=loc_grid, query=Extrapolation_List$Data_Extrap[which(Extrapolation_List$Area_km2_x>0),c('Lon','Lat')], k=1)$nn.idx[,1]))
-    loc_grid = loc_grid[Which,]
-    grid_num = RANN::nn2( data=loc_grid, query=loc_i, k=1)$nn.idx[,1]
-  }
+  # if( Method=="Spherical_mesh" ){
+  #   loc_i = data.frame( 'Lon'=Lon_i, 'Lat'=Lat_i )
+  #   # Bounds for 2D AR1 grid
+  #   Grid_bounds = (grid_size_km/110) * apply(loc_e/(grid_size_km/110), MARGIN=2, FUN=function(vec){trunc(range(vec))+c(0,1)})
+  #   
+  #   # Calculate k-means centroids
+  #   if(is.null(Kmeans)) Kmeans = make_kmeans(n_x=n_x,
+  #                                            loc_orig=loc_i[,c("Lon", "Lat")], randomseed=randomseed, kmeans_purpose='spatial', backwards_compatible_kmeans=backwards_compatible_kmeans, ... )
+  #   
+  #   # Calculate grid for 2D AR1 process
+  #   loc_grid = expand.grid( 'Lon'=seq(Grid_bounds[1,1],Grid_bounds[2,1],by=grid_size_LL), 'Lat'=seq(Grid_bounds[1,2],Grid_bounds[2,2],by=grid_size_LL) )
+  #   Which = sort(unique(RANN::nn2(data=loc_grid, query=Extrapolation_List$Data_Extrap[which(Extrapolation_List$Area_km2_x>0),c('Lon','Lat')], k=1)$nn.idx[,1]))
+  #   loc_grid = loc_grid[Which,]
+  #   grid_num = RANN::nn2( data=loc_grid, query=loc_i, k=1)$nn.idx[,1]
+  # }
+  
   if( Method %in% c("Mesh","Grid","Stream_network","Barrier") ){
-    loc_i = project_coordinates( X=Lon_i, Y=Lat_i, projargs=Extrapolation_List$projargs )
-    loc_intensity = project_coordinates( X=LON_intensity, Y=LAT_intensity, projargs=Extrapolation_List$projargs )
+    loc_i = project_coordinates( X=Lon_i, Y=Lat_i, projargs=Extrapolation_List$projargs ) #UTM変換
+    loc_intensity = project_coordinates( X=LON_intensity, Y=LAT_intensity, projargs=Extrapolation_List$projargs ) #上と何が違う？
     colnames(loc_i) = colnames(loc_intensity) = c("E_km", "N_km")
-    # Bounds for 2D AR1 grid
+    # Bounds for 2D AR1 grid  <- これ何？
     Grid_bounds = grid_size_km * apply(Extrapolation_List$Data_Extrap[,c('E_km','N_km')]/grid_size_km, MARGIN=2, FUN=function(vec){trunc(range(vec))+c(0,1)})
     
     # Calculate k-means centroids
