@@ -73,9 +73,8 @@ make_spatial_info = function( n_x,
     Grid_bounds = grid_size_km * apply(Extrapolation_List$Data_Extrap[,c('E_km','N_km')]/grid_size_km, MARGIN=2, FUN=function(vec){trunc(range(vec))+c(0,1)})
     
     # Calculate k-means centroids
-    if(is.null(Kmeans)) Kmeans = make_kmeans(n_x=n_x, loc_orig=loc_intensity[,c("E_km", "N_km")], randomseed=randomseed, nstart=nstart,
-                                             DirPath=DirPath, Save_Results=Save_Results, backwards_compatible_kmeans=backwards_compatible_kmeans )
-    NN_i = RANN::nn2( data=Kmeans[["centers"]], query=loc_i, k=1)$nn.idx[,1]
+    if(is.null(Kmeans)) Kmeans = make_kmeans(n_x=n_x, loc_orig=loc_intensity[,c("E_km", "N_km")], randomseed=1, nstart=100, DirPath=paste0(getwd(),"/"), Save_Results=TRUE, backwards_compatible_kmeans=FALSE)
+    NN_i = RANN::nn2( data=Kmeans[["centers"]], query=loc_i, k=1)$nn.idx[,1] #RANNはk近傍法関係のパッケージでリスト（nn.idxとnn.dists）が返される．行の数はDGの行数と同じ．それぞれの地点がどのknotになるのかを作成している？
     
     # Calculate grid for 2D AR1 process
     loc_grid = expand.grid( 'E_km'=seq(Grid_bounds[1,1],Grid_bounds[2,1],by=grid_size_km), 'N_km'=seq(Grid_bounds[1,2],Grid_bounds[2,2],by=grid_size_km) )
