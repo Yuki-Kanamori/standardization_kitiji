@@ -70,17 +70,17 @@ make_spatial_info = function( n_x,
     loc_intensity = project_coordinates( X=LON_intensity, Y=LAT_intensity, projargs=Extrapolation_List$projargs ) #上と何が違う？
     colnames(loc_i) = colnames(loc_intensity) = c("E_km", "N_km")
     # Bounds for 2D AR1 grid  <- これ何？
-    Grid_bounds = grid_size_km * apply(Extrapolation_List$Data_Extrap[,c('E_km','N_km')]/grid_size_km, MARGIN=2, FUN=function(vec){trunc(range(vec))+c(0,1)})
+    Grid_bounds = grid_size_km * apply(Extrapolation_List$Data_Extrap[,c('E_km','N_km')]/grid_size_km, MARGIN=2, FUN=function(vec){trunc(range(vec))+c(0,1)}) #範囲の最大と最小を出している？2行2列のデータが返される
     
     # Calculate k-means centroids
     if(is.null(Kmeans)) Kmeans = make_kmeans(n_x=n_x, loc_orig=loc_intensity[,c("E_km", "N_km")], randomseed=1, nstart=100, DirPath=paste0(getwd(),"/"), Save_Results=TRUE, backwards_compatible_kmeans=FALSE)
     NN_i = RANN::nn2( data=Kmeans[["centers"]], query=loc_i, k=1)$nn.idx[,1] #RANNはk近傍法関係のパッケージでリスト（nn.idxとnn.dists）が返される．行の数はDGの行数と同じ．それぞれの地点がどのknotになるのかを作成している？
     
     # Calculate grid for 2D AR1 process
-    loc_grid = expand.grid( 'E_km'=seq(Grid_bounds[1,1],Grid_bounds[2,1],by=grid_size_km), 'N_km'=seq(Grid_bounds[1,2],Grid_bounds[2,2],by=grid_size_km) )
-    Which = sort(unique(RANN::nn2(data=loc_grid, query=Extrapolation_List$Data_Extrap[which(Extrapolation_List$Area_km2_x>0),c('E_km','N_km')], k=1)$nn.idx[,1]))
-    loc_grid = loc_grid[Which,]
-    grid_num = RANN::nn2( data=loc_grid, query=loc_i, k=1)$nn.idx[,1]
+    loc_grid = expand.grid( 'E_km'=seq(Grid_bounds[1,1],Grid_bounds[2,1],by=grid_size_km), 'N_km'=seq(Grid_bounds[1,2],Grid_bounds[2,2],by=grid_size_km) ) #300行2列のdataframe（E_km, N_km）
+    Which = sort(unique(RANN::nn2(data=loc_grid, query=Extrapolation_List$Data_Extrap[which(Extrapolation_List$Area_km2_x>0),c('E_km','N_km')], k=1)$nn.idx[,1])) #loc_gridに対してknotを作成し，ユニークなものを抽出？63行
+    loc_grid = loc_grid[Which,] #whichの行だけ抽出
+    grid_num = RANN::nn2( data=loc_grid, query=loc_i, k=1)$nn.idx[,1] #もう一回knotを作成？これはよくわからん．行の数はDFの行数と同じ
   }
   
   # Calc design matrix and areas
