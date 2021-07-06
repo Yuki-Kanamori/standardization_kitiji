@@ -69,7 +69,7 @@ make_spatial_info = function( n_x,
     loc_i = project_coordinates( X=Lon_i, Y=Lat_i, projargs=Extrapolation_List$projargs ) #UTM変換
     loc_intensity = project_coordinates( X=LON_intensity, Y=LAT_intensity, projargs=Extrapolation_List$projargs ) #上と何が違う？
     colnames(loc_i) = colnames(loc_intensity) = c("E_km", "N_km")
-    # Bounds for 2D AR1 grid  <- これ何？
+    # Bounds for 2D AR1 grid  <- これ何？Grid_boundsをどこで使っている？make_meshとmake_kmeansを検索したけど出てこなかった
     Grid_bounds = grid_size_km * apply(Extrapolation_List$Data_Extrap[,c('E_km','N_km')]/grid_size_km, MARGIN=2, FUN=function(vec){trunc(range(vec))+c(0,1)}) #範囲の最大と最小を出している？2行2列のデータが返される
     
     # Calculate k-means centroids
@@ -141,7 +141,8 @@ make_spatial_info = function( n_x,
   
   # Make projection matrices
   if( fine_scale==FALSE ){
-    A_is = matrix(0, nrow=nrow(loc_i), ncol=n_s)
+    # A_is = matrix(0, nrow=nrow(loc_i), ncol=n_s)
+    A_is = matrix(0, nrow=nrow(loc_i), ncol=116)
     A_is[ cbind(1:nrow(loc_i),knot_i) ] = 1
     A_is = as( A_is, "dgTMatrix" )
     A_gs = as( diag(n_x), "dgTMatrix" )
@@ -162,6 +163,7 @@ make_spatial_info = function( n_x,
   
   # Calculate areas
   if( Method != "Stream_network" ){
+    # ここ
     PolygonList = Calc_Polygon_Areas_and_Polygons_Fn( loc_x=loc_x, Data_Extrap=Extrapolation_List[["Data_Extrap"]], a_el=Extrapolation_List[["a_el"]])
     if( fine_scale==FALSE ){
       a_gl = PolygonList[["a_xl"]]
@@ -176,11 +178,12 @@ make_spatial_info = function( n_x,
     a_gl = matrix(dist_inp, nrow=n_x)
   }
   
-  # Moving
+  # Moving これ何？
   if( fine_scale==TRUE | Method=="Stream_network" ){
     g_e = rep(NA, length(Extrapolation_List[["Area_km2_x"]]))
     g_e[ which(Extrapolation_List[["Area_km2_x"]]>0) ] = 1:length(which(Extrapolation_List[["Area_km2_x"]]>0))
   }else{
+    # ここ
     g_e = PolygonList$NN_Extrap$nn.idx[,1]
     g_e[ which(Extrapolation_List[["Area_km2_x"]]==0) ] = NA
   }
