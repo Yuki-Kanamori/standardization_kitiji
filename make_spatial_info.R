@@ -84,19 +84,19 @@ make_spatial_info = function( n_x,
   }
   
   # Calc design matrix and areas
-  if( Method=="Grid" ){
-    knot_i = grid_num
-    loc_x = loc_grid
-  }
+  # if( Method=="Grid" ){
+  #   knot_i = grid_num
+  #   loc_x = loc_grid
+  # }
   if( Method %in% c("Mesh","Spherical_mesh","Barrier") ){
     knot_i = NN_i
     loc_x = Kmeans[["centers"]]
   }
-  if( Method == "Stream_network" ){
-    knot_i = Extrapolation_List$Data_Extrap[,"child_i"]
-    loc_x = project_coordinates( X=Network_sz_LL[,"Lon"], Y=Network_sz_LL[,"Lat"], projargs=Extrapolation_List$projargs )
-    colnames(loc_x) = c('E_km', 'N_km')
-  }
+  # if( Method == "Stream_network" ){
+  #   knot_i = Extrapolation_List$Data_Extrap[,"child_i"]
+  #   loc_x = project_coordinates( X=Network_sz_LL[,"Lon"], Y=Network_sz_LL[,"Lat"], projargs=Extrapolation_List$projargs )
+  #   colnames(loc_x) = c('E_km', 'N_km')
+  # }
   
   # Bookkeeping for extrapolation-grid
   if( fine_scale==FALSE ){
@@ -109,7 +109,7 @@ make_spatial_info = function( n_x,
   # Convert loc_x back to location in lat-long coordinates latlon_x
   #origargs = "+proj=longlat +ellps=WGS84"
   origargs = "+proj=longlat +datum=WGS84"
-  latlon_x = project_coordinates( X=loc_x[,"E_km"], Y=loc_x[,"N_km"], projargs=origargs, origargs=Extrapolation_List$projargs )[,c("Y","X")]
+  latlon_x = project_coordinates( X=loc_x[,"E_km"], Y=loc_x[,"N_km"], projargs=origargs, origargs=Extrapolation_List$projargs )[,c("Y","X")] #UTMを緯度経度に戻す
   colnames(latlon_x) = c("Lat", "Lon")
   
   # Convert loc_g back to location in lat-long coordinates latlon_g
@@ -129,7 +129,7 @@ make_spatial_info = function( n_x,
                           fine_scale=fine_scale, anisotropic_mesh=anisotropic_mesh, ... )
   }
   n_s = switch( tolower(Method), "mesh"=MeshList$anisotropic_spde$n.spde, "grid"=nrow(loc_x),
-                "spherical_mesh"=MeshList$isotropic_spde$n.spde, "stream_network"=nrow(loc_x), "barrier"=MeshList$anisotropic_spde$n.spde,  )
+                "spherical_mesh"=MeshList$isotropic_spde$n.spde, "stream_network"=nrow(loc_x), "barrier"=MeshList$anisotropic_spde$n.spde,  ) #toloweは大文字を小文字に変換（逆はtoupper）．n.spdeはbarrierにした場合はbarrier.model$f$nかな？
   
   # Make matrices for 2D AR1 process
   Dist_grid = dist(loc_grid, diag=TRUE, upper=TRUE)
